@@ -1197,3 +1197,12 @@ maintainer-clean-local:
 @VALGRIND_CHECK_RULES@
 
 VALGRIND_SUPPRESSIONS_FILES = builds/valgrind/valgrind.supp
+
+CUDA_OBJECTS = src/cuda_scalarmult.o
+
+src/cuda_scalarmult.o: src/cuda_scalarmult.cu
+	nvcc -c -Xcompiler -fPIC $< -o $@
+
+src_libzmq_la_LIBADD += $(CUDA_OBJECTS) -lcudart
+BUILT_SOURCES = $(CUDA_OBJECTS)
+CLEANFILES = $(CUDA_OBJECTS)

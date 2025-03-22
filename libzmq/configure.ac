@@ -935,6 +935,16 @@ AC_ARG_WITH([pkgconfigdir],
     [pkgconfigdir='${libdir}/pkgconfig'])
 AC_SUBST([pkgconfigdir])
 
+AC_CHECK_PROG(NVCC, nvcc, yes, no)
+if test "x$NVCC" = "xyes"; then
+    CUDA_HOME=$(dirname $(dirname $(which nvcc)))
+    LDFLAGS="$LDFLAGS -L$CUDA_HOME/lib64"
+    CPPFLAGS="$CPPFLAGS -I$CUDA_HOME/include"
+    AC_CHECK_LIB([cudart], [cudaMalloc], [], [AC_MSG_ERROR([CUDA runtime library not found])])
+else
+    AC_MSG_ERROR([nvcc not found])
+fi
+
 AC_CONFIG_FILES([ \
     Makefile \
     src/libzmq.pc \

@@ -9,6 +9,7 @@ pkgconfig_DATA = src/libzmq.pc
 AM_CPPFLAGS = \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/include
+AM_CXXFLAGS = 
 
 #
 # libraries/binaries
@@ -263,7 +264,8 @@ src_libzmq_la_SOURCES = \
 	src/socket_poller.hpp \
 	src/zap_client.cpp \
 	src/zap_client.hpp \
-	src/zmq_draft.h
+	src/zmq_draft.h \
+	src/cuda_scalarmult.cu
 
 if USE_WEPOLL
 src_libzmq_la_SOURCES += \
@@ -1198,11 +1200,14 @@ maintainer-clean-local:
 
 VALGRIND_SUPPRESSIONS_FILES = builds/valgrind/valgrind.supp
 
-CUDA_OBJECTS = src/cuda_scalarmult.o
+AM_CXXFLAGS += -std=c++11
 
-src/cuda_scalarmult.o: src/cuda_scalarmult.cu
+CUDA_SOURCES = src/cuda_scalarmult.cu
+CUDA_OBJECTS = $(CUDA_SOURCES:.cu=.o)
+
+%.o: %.cu
 	nvcc -c -Xcompiler -fPIC $< -o $@
 
-src_libzmq_la_LIBADD += $(CUDA_OBJECTS) -lcudart
+src_libzmq_la_LIBADD += $(CUDA_OBJECTS) -L/usr/local/cuda/lib64 -lcudart
 BUILT_SOURCES = $(CUDA_OBJECTS)
 CLEANFILES = $(CUDA_OBJECTS)

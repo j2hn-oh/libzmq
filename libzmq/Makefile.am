@@ -9,7 +9,6 @@ pkgconfig_DATA = src/libzmq.pc
 AM_CPPFLAGS = \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/include
-AM_CXXFLAGS = 
 
 #
 # libraries/binaries
@@ -264,8 +263,7 @@ src_libzmq_la_SOURCES = \
 	src/socket_poller.hpp \
 	src/zap_client.cpp \
 	src/zap_client.hpp \
-	src/zmq_draft.h \
-	src/cuda_scalarmult.cu
+	src/zmq_draft.h
 
 if USE_WEPOLL
 src_libzmq_la_SOURCES += \
@@ -1200,14 +1198,13 @@ maintainer-clean-local:
 
 VALGRIND_SUPPRESSIONS_FILES = builds/valgrind/valgrind.supp
 
-AM_CXXFLAGS += -std=c++11
+# 정적 라이브러리 정의 (libcuda_scalarmult.a 생성)
+noinst_LIBRARIES += src/libcuda_scalarmult.a
 
-CUDA_SOURCES = src/cuda_scalarmult.cu
-CUDA_OBJECTS = $(CUDA_SOURCES:.cu=.o)
+# CUDA 소스 포함
+src_libcuda_scalarmult_a_SOURCES = src/cuda_scalarmult.cu
+src_libcuda_scalarmult_a_CPPFLAGS = -I/usr/local/cuda/include
+src_libcuda_scalarmult_a_CXXFLAGS = -std=c++11
 
-%.o: %.cu
-	nvcc -c -Xcompiler -fPIC $< -o $@
-
-src_libzmq_la_LIBADD += $(CUDA_OBJECTS) -L/usr/local/cuda/lib64 -lcudart
-BUILT_SOURCES = $(CUDA_OBJECTS)
-CLEANFILES = $(CUDA_OBJECTS)
+# libzmq에서 CUDA 라이브러리 링크
+src_libzmq_la_LIBADD += src/libcuda_scalarmult.a -L/usr/local/cuda/lib64 -lcudart
